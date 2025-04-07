@@ -11,7 +11,7 @@
 **既存のプロジェクトをクローンする場合**
 1. `cp .env.example .env`
 1. このdockerプロジェクトディレクトリで`git clone [対象リポジトリ]`
-1. クローンしたプロジェクトのディレクトリ名を`backend`に変更
+1. クローンしたプロジェクトのディレクトリ名を`backend`に変更　(ex. xxxxxx-project => backend)
 1. `make init`
 
 ## VScode Setting
