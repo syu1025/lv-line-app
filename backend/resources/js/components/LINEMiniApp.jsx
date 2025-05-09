@@ -25,10 +25,10 @@ const LINEMiniApp = () => {
 
     // 前月の日を埋める
     const firstDayOfWeek = firstDay.getDay();
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month, -i);
-      days.push({ date: prevDate, currentMonth: false });
-    }
+        for (let i = firstDayOfWeek; i > 0; i--) {
+        const prevDate = new Date(year, month, 1 - i);
+        days.push({ date: prevDate, currentMonth: false });
+        }
 
     // 当月の日を埋める
     for (let i = 1; i <= lastDay.getDate(); i++) {
@@ -46,7 +46,8 @@ const LINEMiniApp = () => {
 
   // 日付を選択
   const toggleDateSelection = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toLocaleDateString('sv-SE'); // YYYY-MM-DD形式で日本時間の日付を取得
+    console.log('日付文字列:', dateStr);
     if (selectedDates.includes(dateStr)) {
       setSelectedDates(selectedDates.filter(d => d !== dateStr));
       // 選択解除された日付のシフト情報も削除
@@ -87,7 +88,9 @@ const LINEMiniApp = () => {
 
   // フォーマットした日付を取得
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
+    // 'YYYY-MM-DD'を分割してDateを生成
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
   };
 
