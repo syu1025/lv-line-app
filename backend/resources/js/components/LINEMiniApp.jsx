@@ -60,7 +60,12 @@ const LINEMiniApp = () => {
       delete newShiftType[dateStr];
       setShiftType(newShiftType);
     } else {
-      setSelectedDates([...selectedDates, dateStr]);
+      // 新しい日付を追加して日付順にソート
+      const newSelectedDates = [...selectedDates, dateStr].sort((a, b) => {
+        // YYYY-MM-DD形式の文字列を比較すると、自然と日付順になる
+        return a.localeCompare(b);
+      });
+      setSelectedDates(newSelectedDates);
     }
   };
 
@@ -75,7 +80,7 @@ const LINEMiniApp = () => {
   const toggleShiftType = (dateStr) => {
     setShiftType({
       ...shiftType,
-      [dateStr]: shiftType[dateStr] === 'time' ? 'lecture' : 'time'
+      [dateStr]: shiftType[dateStr] === 'lecture' ? 'time' : 'lecture'
     });
   };
 
@@ -219,20 +224,21 @@ const LINEMiniApp = () => {
             ))}
           </div>
 
-          {/* 選択した日付を表示（デバッグ用） */}
+          {/* 選択した日付を表示（デバッグ用）
           <div className="mt-4 p-2 bg-gray-100 rounded">
             <h3 className="font-bold text-gray-700">選択中の日付:</h3>
             {selectedDates.map(dateStr => (
               <h1 key={dateStr} className="text-red-500">dateStr: {dateStr}</h1>
             ))}
           </div>
+          */}
         </div>
       )}
 
       {/* 選択された日付のシフト設定 */}
       {!confirmationMode ? (
         <div className="flex-1 overflow-auto p-4">
-          {/* デバッグ表示（常に表示） */}
+          {/* デバッグ表示（常に表示）
           <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
             <h3 className="font-bold text-gray-700">デバッグ情報:</h3>
             <p>showDatePicker: {showDatePicker ? 'true' : 'false'}</p>
@@ -241,6 +247,7 @@ const LINEMiniApp = () => {
               <h1 key={dateStr} className="text-red-500">選択日: {dateStr}</h1>
             ))}
           </div>
+          */}
 
           {selectedDates.length === 0 ? (
             <div className="text-center text-gray-500 mt-8">
@@ -271,8 +278,12 @@ const LINEMiniApp = () => {
                         onChange={(e) => updateShift(dateStr, {...shifts[dateStr], startTime: e.target.value})}
                       >
                         <option value="">開始時間</option>
-                        {Array.from({length: 14}, (_, i) => i + 9).map(hour => (
-                          <option key={hour} value={`${hour}:00`}>{hour}:00</option>
+                        {Array.from({length: 28}, (_, i) => {
+                          const hour = Math.floor(i / 2) + 9;
+                          const minute = i % 2 === 0 ? '00' : '30';
+                          return `${hour}:${minute}`;
+                        }).map(time => (
+                          <option key={time} value={time}>{time}</option>
                         ))}
                       </select>
                       <span className="mx-1">〜</span>
@@ -282,8 +293,13 @@ const LINEMiniApp = () => {
                         onChange={(e) => updateShift(dateStr, {...shifts[dateStr], endTime: e.target.value})}
                       >
                         <option value="">終了時間</option>
-                        {Array.from({length: 14}, (_, i) => i + 10).map(hour => (
-                          <option key={hour} value={`${hour}:00`}>{hour}:00</option>
+                        {Array.from({length: 28}, (_, i) => {
+                          const hour = Math.floor(i / 2) + 9;
+                          const minute = i % 2 === 0 ? '30' : '00';
+                          const displayHour = minute === '30' ? hour : hour + 1;
+                          return `${displayHour}:${minute}`;
+                        }).map(time => (
+                          <option key={time} value={time}>{time}</option>
                         ))}
                       </select>
                     </div>
