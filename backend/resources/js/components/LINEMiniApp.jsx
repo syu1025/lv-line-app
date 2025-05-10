@@ -308,7 +308,7 @@ const LINEMiniApp = () => {
                   {/* 講数指定のUI（複数選択可能） */}
                   {shiftType[dateStr] === 'lecture' && (
                     <div className="flex flex-wrap gap-2">
-                      {Array.from({length: 7}, (_, i) => i + 1).map(lecture => (
+                      {[4, 5, 6, 7].map(lecture => (
                         <button
                           key={lecture}
                           onClick={() => {
