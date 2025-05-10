@@ -9,7 +9,7 @@ axios.defaults.withCredentials = true;
 const LINEMiniApp = () => {
   const [selectedDates, setSelectedDates] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(true);
   const [shifts, setShifts] = useState({});
   const [shiftType, setShiftType] = useState({});
   const [confirmationMode, setConfirmationMode] = useState(false);
@@ -38,11 +38,12 @@ const LINEMiniApp = () => {
 
     return days;
   };
-
+  //ここで実際に日付を取得、上の関数を引数ありで呼び出している
   const days = getDaysInMonth(
     currentMonth.getFullYear(),
     currentMonth.getMonth()
   );
+
 
   // 日付を選択
   const toggleDateSelection = (date) => {
@@ -207,7 +208,7 @@ const LINEMiniApp = () => {
                 className={`
                   p-2 text-center rounded-md text-sm
                   ${!day.currentMonth ? 'text-gray-300' :
-                    selectedDates.includes(day.date.toISOString().split('T')[0])
+                    selectedDates.includes(day.date.toLocaleDateString('sv-SE'))
                       ? 'bg-green-500 text-white'
                       : 'hover:bg-gray-100'
                   }
@@ -217,12 +218,30 @@ const LINEMiniApp = () => {
               </div>
             ))}
           </div>
+
+          {/* 選択した日付を表示（デバッグ用） */}
+          <div className="mt-4 p-2 bg-gray-100 rounded">
+            <h3 className="font-bold text-gray-700">選択中の日付:</h3>
+            {selectedDates.map(dateStr => (
+              <h1 key={dateStr} className="text-red-500">dateStr: {dateStr}</h1>
+            ))}
+          </div>
         </div>
       )}
 
       {/* 選択された日付のシフト設定 */}
       {!confirmationMode ? (
         <div className="flex-1 overflow-auto p-4">
+          {/* デバッグ表示（常に表示） */}
+          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
+            <h3 className="font-bold text-gray-700">デバッグ情報:</h3>
+            <p>showDatePicker: {showDatePicker ? 'true' : 'false'}</p>
+            <p>selectedDates.length: {selectedDates.length}</p>
+            {selectedDates.map(dateStr => (
+              <h1 key={dateStr} className="text-red-500">選択日: {dateStr}</h1>
+            ))}
+          </div>
+
           {selectedDates.length === 0 ? (
             <div className="text-center text-gray-500 mt-8">
               <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
