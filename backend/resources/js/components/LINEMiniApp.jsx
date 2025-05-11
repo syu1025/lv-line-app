@@ -9,7 +9,7 @@ axios.defaults.withCredentials = true;
 const LINEMiniApp = () => {
   const [selectedDates, setSelectedDates] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(true);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [shifts, setShifts] = useState({});
   const [shiftType, setShiftType] = useState({});
   const [confirmationMode, setConfirmationMode] = useState(false);
@@ -66,6 +66,12 @@ const LINEMiniApp = () => {
         return a.localeCompare(b);
       });
       setSelectedDates(newSelectedDates);
+
+      // デフォルトでシフトタイプを「講義指定」に設定
+      setShiftType({
+        ...shiftType,
+        [dateStr]: 'lecture'
+      });
     }
   };
 
@@ -126,7 +132,7 @@ const LINEMiniApp = () => {
       const response = await axios.post('/api/shifts', {
         shifts: selectedDates.map(dateStr => ({
           date: dateStr,
-          type: shiftType[dateStr] || 'time',
+          type: shiftType[dateStr] || 'lecture',
           start_time: shifts[dateStr]?.startTime,
           end_time: shifts[dateStr]?.endTime,
           lectures: shifts[dateStr]?.lectures
@@ -264,7 +270,7 @@ const LINEMiniApp = () => {
                       onClick={() => toggleShiftType(dateStr)}
                       className="text-xs bg-gray-100 px-2 py-1 rounded"
                     >
-                      {!shiftType[dateStr] || shiftType[dateStr] === 'time' ? '時間指定' : '講数指定'} ▼
+                      {!shiftType[dateStr] || shiftType[dateStr] === 'time' ? '時間指定' : '講義指定'} ▼
                     </button>
                   </div>
 
@@ -382,7 +388,7 @@ const LINEMiniApp = () => {
               onClick={submitShifts}
               className="flex-1 bg-green-500 text-white py-3 rounded-lg"
             >
-              LINEで提出する
+              提出する
             </button>
           </div>
         </div>
@@ -390,8 +396,17 @@ const LINEMiniApp = () => {
 
       {/* フッター */}
       <div className="bg-gray-50 p-4 border-t border-gray-200">
-        <div className="text-center text-xs text-gray-400">
-          シフト登録システム v1.0
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-gray-400">
+            シフト登録システム v1.0
+          </div>
+          <a
+            href="/shifts-table"
+            className="bg-blue-500 text-white px-3 py-1 rounded text-sm flex items-center"
+          >
+            <History size={14} className="mr-1" />
+            シフト表を見る
+          </a>
         </div>
       </div>
     </div>

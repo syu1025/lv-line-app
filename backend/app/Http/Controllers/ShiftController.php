@@ -69,4 +69,59 @@ class ShiftController extends Controller
 
         return response()->json($shifts);
     }
+
+    /**
+     * シフト表のデータを取得
+     */
+    public function getShiftsTable()
+    {
+        // 週の日付を取得（例: 月曜から日曜まで）
+        $today = now();
+        $startOfWeek = $today->startOfWeek();
+        $dates = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            $date = $startOfWeek->copy()->addDays($i);
+            $dates[] = [
+                'date' => $date->format('Y-m-d'),
+                'display' => $date->format('n/j'),
+            ];
+        }
+
+        // すべてのシフトを取得
+        $shifts = Shift::whereBetween('date', [$dates[0]['date'], $dates[6]['date']])
+            ->with('user')  // もしUserモデルとのリレーションがあれば
+            ->get()
+            ->groupBy('date');
+
+        dd($shifts);
+
+        // レスポンスデータを整形
+        $lectureShifts = [];
+        $timeShifts = [];
+
+        foreach ($shifts as $date => $dateShifts) {
+            foreach ($dateShifts as $shift) {
+                if ($shift->type === 'lecture') {
+                    if (is_array($shift->lectures)) {
+                        foreach ($shift->lectures as $lecture) {
+                            $lectureShifts[$lecture][$date][] = $shift->line_user_id;
+                        }
+                    }
+                } else {
+                    $timeShifts[$date][] = [
+                        'user' => $shift->line_user_id,
+                        'start_time' => $shift->start_time,
+                        'end_time' => $shift->end_time
+                    ];
+                }
+            }
+        }
+
+        return response()->json([
+            'dates' => $dates,
+            'lecture_shifts' => $lectureShifts,
+            'time_shifts' => $timeShifts
+        ]);
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ShiftController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('app');
 });
+
+// シフト表示ページ
+Route::get('/shifts-table', function () {
+    return view('shifts-table');
+});
+
+// シフト表のデータを取得するAPI
+Route::get('/api/shifts-table', [ShiftController::class, 'getShiftsTable']);
