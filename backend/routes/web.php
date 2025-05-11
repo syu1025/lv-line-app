@@ -18,10 +18,6 @@ Route::get('/', function () {
     return view('app');
 });
 
-// シフト表示ページ
-Route::get('/shifts-table', function () {
-    return view('shifts-table');
-});
-
-// シフト表のデータを取得するAPI
-Route::get('/api/shifts-table', [ShiftController::class, 'getShiftsTable']);
+// シフト表表示ページへ
+Route::get('/shifts-table', [ShiftController::class, 'getShiftsTable'])
+    ->name('shifts-table');

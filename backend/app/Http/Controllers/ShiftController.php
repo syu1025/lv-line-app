@@ -11,7 +11,7 @@ class ShiftController extends Controller
 {
     public function store(Request $request)
     {
-        \Log::info('シフト登録リクエスト:', $request->all());
+        Log::info('シフト登録リクエスト:', $request->all());
 
         $validator = Validator::make($request->all(), [
             'shifts' => 'required|array',
@@ -24,7 +24,7 @@ class ShiftController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Log::error('バリデーションエラー:', $validator->errors()->toArray());
+            Log::error('バリデーションエラー:', $validator->errors()->toArray());
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
@@ -33,7 +33,7 @@ class ShiftController extends Controller
 
         try {
             foreach ($request->shifts as $shiftData) {
-                \Log::info('シフトデータ保存:', $shiftData);
+                Log::info('シフトデータ保存:', $shiftData);
                 Shift::updateOrCreate(
                     [
                         'date' => $shiftData['date'],
@@ -50,7 +50,7 @@ class ShiftController extends Controller
 
             return response()->json(['message' => 'シフトが登録されました'], 200);
         } catch (\Exception $e) {
-            \Log::error('シフト保存エラー:', [
+            Log::error('シフト保存エラー:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -75,53 +75,14 @@ class ShiftController extends Controller
      */
     public function getShiftsTable()
     {
-        // 週の日付を取得（例: 月曜から日曜まで）
-        $today = now();
-        $startOfWeek = $today->startOfWeek();
-        $dates = [];
-
-        for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
-            $dates[] = [
-                'date' => $date->format('Y-m-d'),
-                'display' => $date->format('n/j'),
-            ];
-        }
-
         // すべてのシフトを取得
-        $shifts = Shift::whereBetween('date', [$dates[0]['date'], $dates[6]['date']])
-            ->with('user')  // もしUserモデルとのリレーションがあれば
+        // 全シフトを日付でグループ化して取得
+        $shifts_date = Shift::orderBy('date')
             ->get()
             ->groupBy('date');
 
-        dd($shifts);
+        //dd($shifts);
 
-        // レスポンスデータを整形
-        $lectureShifts = [];
-        $timeShifts = [];
-
-        foreach ($shifts as $date => $dateShifts) {
-            foreach ($dateShifts as $shift) {
-                if ($shift->type === 'lecture') {
-                    if (is_array($shift->lectures)) {
-                        foreach ($shift->lectures as $lecture) {
-                            $lectureShifts[$lecture][$date][] = $shift->line_user_id;
-                        }
-                    }
-                } else {
-                    $timeShifts[$date][] = [
-                        'user' => $shift->line_user_id,
-                        'start_time' => $shift->start_time,
-                        'end_time' => $shift->end_time
-                    ];
-                }
-            }
-        }
-
-        return response()->json([
-            'dates' => $dates,
-            'lecture_shifts' => $lectureShifts,
-            'time_shifts' => $timeShifts
-        ]);
+        return view('shifts-table', compact('shifts_date'));
     }
 }
