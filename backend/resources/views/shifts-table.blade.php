@@ -138,8 +138,19 @@
                                         // 現在の日付を取得（表示用）
                                         $today = \Carbon\Carbon::today();
 
-                                        // フィルタリングを削除し、すべての日付を表示
-                                        $filteredDates = $dates;
+                                        // 今日以降の日付のみをフィルタリング
+                                        $filteredDates = [];
+                                        foreach ($dates as $date) {
+                                            $carbonDate = \Carbon\Carbon::parse($date);
+                                            if ($carbonDate->greaterThanOrEqualTo($today)) {
+                                                $filteredDates[] = $date;
+                                            }
+                                        }
+
+                                        // フィルタリング後の日付がない場合は全ての日付を表示
+                                        if (empty($filteredDates)) {
+                                            $filteredDates = $dates;
+                                        }
                                     @endphp
 
                                     @foreach ($filteredDates as $date)
@@ -249,23 +260,30 @@
                 return `${year}-${month}-${day}`;
             };
 
-            // 日付選択の初期値を空に設定（すべての日付を表示）
-            startDateInput.value = '';
-            endDateInput.value = '';
+            // 日付選択の初期値を設定
+            startDateInput.value = formatDate(today); // 今日の日付
+            endDateInput.value = ''; // 終了日は空（全期間）
 
             // フィルターボタンのクリックイベント
             filterButton.addEventListener('click', function() {
-                // 日付が選択されている場合のみフィルタリング
-                if (startDateInput.value && endDateInput.value) {
+                // 開始日だけが指定されている場合は、その日以降をすべて表示
+                if (startDateInput.value && !endDateInput.value) {
+                    const startDate = new Date(startDateInput.value);
+                    filterFutureDate(startDate);
+                }
+                // 両方指定されている場合は範囲指定
+                else if (startDateInput.value && endDateInput.value) {
                     const startDate = new Date(startDateInput.value);
                     const endDate = new Date(endDateInput.value);
                     filterTables(startDate, endDate);
-                } else if (!startDateInput.value && !endDateInput.value) {
-                    // 両方空の場合はすべて表示
+                }
+                // 両方空の場合はすべて表示
+                else if (!startDateInput.value && !endDateInput.value) {
                     showAllDates();
-                } else {
-                    // どちらか一方だけ指定されている場合はアラート
-                    alert('開始日と終了日の両方を入力してください');
+                }
+                // 終了日だけの場合はエラー
+                else {
+                    alert('開始日を入力してください');
                 }
             });
 
@@ -275,6 +293,26 @@
                 allDateColumns.forEach(column => {
                     column.style.display = '';
                 });
+                adjustTableWidths();
+            }
+
+            // 指定した日付以降のみ表示する関数
+            function filterFutureDate(startDate) {
+                const allDateColumns = document.querySelectorAll('th[data-date], td[data-date]');
+
+                allDateColumns.forEach(column => {
+                    const dateStr = column.getAttribute('data-date');
+                    const columnDate = new Date(dateStr);
+
+                    // startDate以降かどうかを判定
+                    if (columnDate >= startDate) {
+                        column.style.display = '';
+                    } else {
+                        column.style.display = 'none';
+                    }
+                });
+
+                // テーブル幅を再調整
                 adjustTableWidths();
             }
 
@@ -297,6 +335,9 @@
                 // テーブル幅を再調整
                 adjustTableWidths();
             }
+
+            // 初期ロード時に今日以降のデータのみ表示
+            filterFutureDate(today);
 
             tables.forEach(table => {
                 table.addEventListener('scroll', function() {
@@ -333,9 +374,6 @@
                     });
                 });
             }
-
-            // 初回実行（全ての日付を表示）
-            showAllDates();
 
             // ウィンドウサイズ変更時に再計算
             window.addEventListener('resize', adjustTableWidths);
