@@ -169,230 +169,235 @@ const LINEMiniApp = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       {/* ヘッダー */}
-      <div className="bg-green-500 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">シフト登録</h1>
-        {!confirmationMode && (
-          <button
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center text-sm bg-white text-green-500 px-3 py-1 rounded-full"
+      <div className="fixed top-0 left-0 w-full bg-white border-b border-gray-200 py-2 px-4 flex justify-between items-center shadow-sm z-50">
+        <h1 className="text-lg font-semibold text-gray-800">シフト管理システム</h1>
+        <div className="flex items-center space-x-2">
+          <a
+            href="/shifts-table"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center"
           >
-            <Calendar size={16} className="mr-1" />
-            {showDatePicker ? '閉じる' : '日付選択'}
-          </button>
-        )}
+            <History size={14} className="mr-1" />
+            シフト表
+          </a>
+          <form method="POST" action="/logout" className="inline">
+            <button type="submit" className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm">
+              ログアウト
+            </button>
+          </form>
+        </div>
       </div>
 
-      {/* カレンダー */}
-      {showDatePicker && !confirmationMode && (
-        <div className="p-4 bg-white shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => changeMonth(-1)}
-              className="text-gray-500"
-            >
-              ＜ 前月
-            </button>
-            <h2 className="font-bold">
-              {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
-            </h2>
-            <button
-              onClick={() => changeMonth(1)}
-              className="text-gray-500"
-            >
-              次月 ＞
-            </button>
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekdays.map(day => (
-              <div key={day} className="text-center font-medium text-sm">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((day, index) => (
-              <div
-                key={index}
-                onClick={() => day.currentMonth && toggleDateSelection(day.date)}
-                className={`
-                  p-2 text-center rounded-md text-sm
-                  ${!day.currentMonth ? 'text-gray-300' :
-                    selectedDates.includes(day.date.toLocaleDateString('sv-SE'))
-                      ? 'bg-green-500 text-white'
-                      : 'hover:bg-gray-100'
-                  }
-                `}
+      {/* メインコンテンツ - 上部余白を追加 */}
+      <div className="flex-1" style={{ paddingTop: '60px' }}>
+        {/* カレンダー */}
+        {showDatePicker && !confirmationMode && (
+          <div className="p-4 bg-white shadow-md mb-4 mx-4 mt-2 rounded">
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => changeMonth(-1)}
+                className="text-gray-500"
               >
-                {day.date.getDate()}
-              </div>
-            ))}
-          </div>
-
-          {/* 選択した日付を表示（デバッグ用）
-          <div className="mt-4 p-2 bg-gray-100 rounded">
-            <h3 className="font-bold text-gray-700">選択中の日付:</h3>
-            {selectedDates.map(dateStr => (
-              <h1 key={dateStr} className="text-red-500">dateStr: {dateStr}</h1>
-            ))}
-          </div>
-          */}
-        </div>
-      )}
-
-      {/* 選択された日付のシフト設定 */}
-      {!confirmationMode ? (
-        <div className="flex-1 overflow-auto p-4">
-          {/* デバッグ表示（常に表示）
-          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
-            <h3 className="font-bold text-gray-700">デバッグ情報:</h3>
-            <p>showDatePicker: {showDatePicker ? 'true' : 'false'}</p>
-            <p>selectedDates.length: {selectedDates.length}</p>
-            {selectedDates.map(dateStr => (
-              <h1 key={dateStr} className="text-red-500">選択日: {dateStr}</h1>
-            ))}
-          </div>
-          */}
-
-          {selectedDates.length === 0 ? (
-            <div className="text-center text-gray-500 mt-8">
-              <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>カレンダーから日付を選択してください</p>
+                ＜ 前月
+              </button>
+              <h2 className="font-bold">
+                {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
+              </h2>
+              <button
+                onClick={() => changeMonth(1)}
+                className="text-gray-500"
+              >
+                次月 ＞
+              </button>
             </div>
-          ) : (
-            <>
-              {selectedDates.map(dateStr => (
-                <div key={dateStr} className="bg-white p-4 rounded-lg shadow mb-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-bold">{formatDate(dateStr)}</h3>
-                    <button
-                      onClick={() => toggleShiftType(dateStr)}
-                      className="text-xs bg-gray-100 px-2 py-1 rounded"
-                    >
-                      {!shiftType[dateStr] || shiftType[dateStr] === 'time' ? '時間指定' : '講義指定'} ▼
-                    </button>
-                  </div>
 
-                  {/* 時間指定のUI */}
-                  {(!shiftType[dateStr] || shiftType[dateStr] === 'time') && (
-                    <div className="flex items-center">
-                      <Clock size={16} className="text-gray-400 mr-2" />
-                      <select
-                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1 mr-2"
-                        value={shifts[dateStr]?.startTime || ''}
-                        onChange={(e) => updateShift(dateStr, {...shifts[dateStr], startTime: e.target.value})}
-                      >
-                        <option value="">開始時間</option>
-                        {Array.from({length: 28}, (_, i) => {
-                          const hour = Math.floor(i / 2) + 9;
-                          const minute = i % 2 === 0 ? '00' : '30';
-                          return `${hour}:${minute}`;
-                        }).map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                      <span className="mx-1">〜</span>
-                      <select
-                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1"
-                        value={shifts[dateStr]?.endTime || ''}
-                        onChange={(e) => updateShift(dateStr, {...shifts[dateStr], endTime: e.target.value})}
-                      >
-                        <option value="">終了時間</option>
-                        {Array.from({length: 28}, (_, i) => {
-                          const hour = Math.floor(i / 2) + 9;
-                          const minute = i % 2 === 0 ? '30' : '00';
-                          const displayHour = minute === '30' ? hour : hour + 1;
-                          return `${displayHour}:${minute}`;
-                        }).map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* 講数指定のUI（複数選択可能） */}
-                  {shiftType[dateStr] === 'lecture' && (
-                    <div className="flex flex-wrap gap-2">
-                      {[4, 5, 6, 7].map(lecture => (
-                        <button
-                          key={lecture}
-                          onClick={() => {
-                            const currentLectures = shifts[dateStr]?.lectures || [];
-                            let newLectures;
-
-                            if (currentLectures.includes(lecture)) {
-                              // 既に選択されている場合は削除
-                              newLectures = currentLectures.filter(l => l !== lecture);
-                            } else {
-                              // 選択されていない場合は追加
-                              newLectures = [...currentLectures, lecture].sort((a, b) => a - b);
-                            }
-
-                            updateShift(dateStr, {lectures: newLectures});
-                          }}
-                          className={`px-3 py-1 rounded text-sm ${
-                            shifts[dateStr]?.lectures?.includes(lecture)
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-100'
-                          }`}
-                        >
-                          {lecture}講
-                        </button>
-                      ))}
-                    </div>
-                  )}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {weekdays.map(day => (
+                <div key={day} className="text-center font-medium text-sm">
+                  {day}
                 </div>
               ))}
+            </div>
 
-              {selectedDates.length > 0 && (
-                <button
-                  onClick={confirmShifts}
-                  className="bg-green-500 text-white py-3 px-6 rounded-lg w-full mt-4"
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, index) => (
+                <div
+                  key={index}
+                  onClick={() => day.currentMonth && toggleDateSelection(day.date)}
+                  className={`
+                    p-2 text-center rounded-md text-sm
+                    ${!day.currentMonth ? 'text-gray-300' :
+                      selectedDates.includes(day.date.toLocaleDateString('sv-SE'))
+                        ? 'bg-green-500 text-white'
+                        : 'hover:bg-gray-100'
+                    }
+                  `}
                 >
-                  確認する
+                  {day.date.getDate()}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 選択された日付のシフト設定 */}
+        {!confirmationMode ? (
+          <div className="flex-1 overflow-auto p-4">
+            {selectedDates.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+                <p>カレンダーから日付を選択してください</p>
+                <button
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="flex items-center text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mx-auto mt-4"
+                >
+                  <Calendar size={16} className="mr-2" />
+                  {showDatePicker ? 'カレンダーを閉じる' : 'カレンダーを開く'}
                 </button>
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        /* 確認画面 */
-        <div className="flex-1 overflow-auto p-4">
-          <h2 className="text-lg font-bold mb-4">シフト確認</h2>
-
-          <div className="bg-white p-4 rounded-lg shadow mb-4">
-            {selectedDates.map(dateStr => (
-              <div key={dateStr} className="border-b py-3 last:border-b-0">
-                <p className="font-bold">{formatDate(dateStr)}</p>
-                <p className="text-gray-600 ml-4">
-                  {shiftType[dateStr] === 'lecture'
-                    ? shifts[dateStr]?.lectures?.length > 0
-                      ? shifts[dateStr].lectures.map(l => `${l}講`).join('、')
-                      : '未選択'
-                    : `${shifts[dateStr]?.startTime || ''} 〜 ${shifts[dateStr]?.endTime || ''}`
-                  }
-                </p>
               </div>
-            ))}
-          </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">シフト登録</h2>
+                  <button
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className="flex items-center text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                  >
+                    <Calendar size={16} className="mr-1" />
+                    {showDatePicker ? 'カレンダーを閉じる' : '日付を追加'}
+                  </button>
+                </div>
+                {selectedDates.map(dateStr => (
+                  <div key={dateStr} className="bg-white p-4 rounded-lg shadow mb-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-bold">{formatDate(dateStr)}</h3>
+                      <button
+                        onClick={() => toggleShiftType(dateStr)}
+                        className="text-xs bg-gray-100 px-2 py-1 rounded"
+                      >
+                        {!shiftType[dateStr] || shiftType[dateStr] === 'time' ? '時間指定' : '講義指定'} ▼
+                      </button>
+                    </div>
 
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={cancelConfirmation}
-              className="flex-1 bg-gray-200 py-3 rounded-lg"
-            >
-              修正する
-            </button>
-            <button
-              onClick={submitShifts}
-              className="flex-1 bg-green-500 text-white py-3 rounded-lg"
-            >
-              提出する
-            </button>
+                    {/* 時間指定のUI */}
+                    {(!shiftType[dateStr] || shiftType[dateStr] === 'time') && (
+                      <div className="flex items-center">
+                        <Clock size={16} className="text-gray-400 mr-2" />
+                        <select
+                          className="bg-gray-50 border border-gray-200 rounded px-2 py-1 mr-2"
+                          value={shifts[dateStr]?.startTime || ''}
+                          onChange={(e) => updateShift(dateStr, {...shifts[dateStr], startTime: e.target.value})}
+                        >
+                          <option value="">開始時間</option>
+                          {Array.from({length: 28}, (_, i) => {
+                            const hour = Math.floor(i / 2) + 9;
+                            const minute = i % 2 === 0 ? '00' : '30';
+                            return `${hour}:${minute}`;
+                          }).map(time => (
+                            <option key={time} value={time}>{time}</option>
+                          ))}
+                        </select>
+                        <span className="mx-1">〜</span>
+                        <select
+                          className="bg-gray-50 border border-gray-200 rounded px-2 py-1"
+                          value={shifts[dateStr]?.endTime || ''}
+                          onChange={(e) => updateShift(dateStr, {...shifts[dateStr], endTime: e.target.value})}
+                        >
+                          <option value="">終了時間</option>
+                          {Array.from({length: 28}, (_, i) => {
+                            const hour = Math.floor(i / 2) + 9;
+                            const minute = i % 2 === 0 ? '30' : '00';
+                            const displayHour = minute === '30' ? hour : hour + 1;
+                            return `${displayHour}:${minute}`;
+                          }).map(time => (
+                            <option key={time} value={time}>{time}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* 講数指定のUI（複数選択可能） */}
+                    {shiftType[dateStr] === 'lecture' && (
+                      <div className="flex flex-wrap gap-2">
+                        {[4, 5, 6, 7].map(lecture => (
+                          <button
+                            key={lecture}
+                            onClick={() => {
+                              const currentLectures = shifts[dateStr]?.lectures || [];
+                              let newLectures;
+
+                              if (currentLectures.includes(lecture)) {
+                                // 既に選択されている場合は削除
+                                newLectures = currentLectures.filter(l => l !== lecture);
+                              } else {
+                                // 選択されていない場合は追加
+                                newLectures = [...currentLectures, lecture].sort((a, b) => a - b);
+                              }
+
+                              updateShift(dateStr, {lectures: newLectures});
+                            }}
+                            className={`px-3 py-1 rounded text-sm ${
+                              shifts[dateStr]?.lectures?.includes(lecture)
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-100'
+                            }`}
+                          >
+                            {lecture}講
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {selectedDates.length > 0 && (
+                  <button
+                    onClick={confirmShifts}
+                    className="bg-green-500 text-white py-3 px-6 rounded-lg w-full mt-4 hover:bg-green-600 transition duration-200"
+                  >
+                    確認する
+                  </button>
+                )}
+              </>
+            )}
           </div>
-        </div>
-      )}
+        ) : (
+          /* 確認画面 */
+          <div className="flex-1 overflow-auto p-4">
+            <h2 className="text-lg font-bold mb-4">シフト確認</h2>
+
+            <div className="bg-white p-4 rounded-lg shadow mb-4">
+              {selectedDates.map(dateStr => (
+                <div key={dateStr} className="border-b py-3 last:border-b-0">
+                  <p className="font-bold">{formatDate(dateStr)}</p>
+                  <p className="text-gray-600 ml-4">
+                    {shiftType[dateStr] === 'lecture'
+                      ? shifts[dateStr]?.lectures?.length > 0
+                        ? shifts[dateStr].lectures.map(l => `${l}講`).join('、')
+                        : '未選択'
+                      : `${shifts[dateStr]?.startTime || ''} 〜 ${shifts[dateStr]?.endTime || ''}`
+                    }
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={cancelConfirmation}
+                className="flex-1 bg-gray-200 py-3 rounded-lg hover:bg-gray-300 transition duration-200"
+              >
+                修正する
+              </button>
+              <button
+                onClick={submitShifts}
+                className="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-200"
+              >
+                提出する
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* フッター */}
       <div className="bg-gray-50 p-4 border-t border-gray-200">
@@ -400,13 +405,6 @@ const LINEMiniApp = () => {
           <div className="text-xs text-gray-400">
             シフト登録システム v1.0
           </div>
-          <a
-            href="/shifts-table"
-            className="bg-blue-500 text-white px-3 py-1 rounded text-sm flex items-center"
-          >
-            <History size={14} className="mr-1" />
-            シフト表を見る
-          </a>
         </div>
       </div>
     </div>

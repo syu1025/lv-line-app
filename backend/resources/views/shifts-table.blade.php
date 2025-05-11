@@ -104,14 +104,23 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="w-full max-w-full px-2 sm:px-4 mx-auto">
-        <header class="py-4 sm:py-6 mb-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-xl sm:text-2xl font-bold">シフト表</h1>
-                <a href="/" class="bg-green-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded text-sm sm:text-base">シフト登録へ戻る</a>
-            </div>
-        </header>
+    <!-- ヘッダー -->
+    <div id="header" class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 py-2 px-4 flex justify-between items-center shadow-sm z-50">
+        <h1 class="text-lg font-semibold text-gray-800">シフト管理システム</h1>
+        <div class="flex items-center space-x-2">
+            <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                シフト登録
+            </a>
+            <form method="POST" action="{{ route('logout') }}" class="inline">
+                @csrf
+                <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm">
+                    ログアウト
+                </button>
+            </form>
+        </div>
+    </div>
 
+    <div class="w-full max-w-full px-4 mx-auto" style="padding-top: 60px;">
         <main>
             <!-- 共通スクロールコンテナ -->
             <div class="sync-scroll" id="table-container">
@@ -138,19 +147,8 @@
                                         // 現在の日付を取得（表示用）
                                         $today = \Carbon\Carbon::today();
 
-                                        // 今日以降の日付のみをフィルタリング
-                                        $filteredDates = [];
-                                        foreach ($dates as $date) {
-                                            $carbonDate = \Carbon\Carbon::parse($date);
-                                            if ($carbonDate->greaterThanOrEqualTo($today)) {
-                                                $filteredDates[] = $date;
-                                            }
-                                        }
-
-                                        // フィルタリング後の日付がない場合は全ての日付を表示
-                                        if (empty($filteredDates)) {
-                                            $filteredDates = $dates;
-                                        }
+                                        // フィルタリングを削除し、すべての日付を表示
+                                        $filteredDates = $dates;
                                     @endphp
 
                                     @foreach ($filteredDates as $date)
@@ -260,9 +258,9 @@
                 return `${year}-${month}-${day}`;
             };
 
-            // 日付選択の初期値を設定
-            startDateInput.value = formatDate(today); // 今日の日付
-            endDateInput.value = ''; // 終了日は空（全期間）
+            // 日付選択の初期値を空に設定（すべての日付を表示）
+            startDateInput.value = '';
+            endDateInput.value = '';
 
             // フィルターボタンのクリックイベント
             filterButton.addEventListener('click', function() {
@@ -336,9 +334,6 @@
                 adjustTableWidths();
             }
 
-            // 初期ロード時に今日以降のデータのみ表示
-            filterFutureDate(today);
-
             tables.forEach(table => {
                 table.addEventListener('scroll', function() {
                     const scrollLeft = this.scrollLeft;
@@ -374,6 +369,9 @@
                     });
                 });
             }
+
+            // 初回実行（全ての日付を表示）
+            showAllDates();
 
             // ウィンドウサイズ変更時に再計算
             window.addEventListener('resize', adjustTableWidths);
