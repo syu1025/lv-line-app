@@ -15,7 +15,7 @@ class Shift extends Model
         'start_time',
         'end_time',
         'lectures',
-        'line_user_id'
+        'user_name'
     ];
 
     protected $casts = [

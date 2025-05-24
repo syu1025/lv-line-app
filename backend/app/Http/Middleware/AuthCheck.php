@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\User;
 
 class AuthCheck
 {
@@ -20,6 +21,9 @@ class AuthCheck
             return redirect()->route('login');
         }
 
+        $user = User::where('name', Session::get('username'))->first();
+        //dd($user);
+        $request->attributes->set('user', $user);
         return $next($request);
     }
 }

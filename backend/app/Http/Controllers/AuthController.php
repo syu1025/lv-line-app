@@ -4,21 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
-    // 認証済みユーザーの配列
-    private $users = [
-        [
-            'username' => 'a',
-            'password' => 'aass1122'
-        ],
-        [
-            'username' => 'b',
-            'password' => 'aass2233'
-        ]
-    ];
-
     // ログインフォームを表示
     public function showLogin()
     {
@@ -36,13 +27,13 @@ class AuthController extends Controller
         $username = $request->input('username');
         $password = $request->input('password');
 
-        // ユーザー認証
-        foreach ($this->users as $user) {
-            if ($user['username'] === $username && $user['password'] === $password) {
-                Session::put('authenticated', true);
-                Session::put('username', $username);
-                return redirect('/');
-            }
+        // データベースからユーザーを検索
+        $user = User::where('name', $username)->first();
+
+        if ($user && Hash::check($password, $user->password)) {
+            Session::put('authenticated', true);
+            Session::put('username', $username);
+            return redirect('/');
         }
 
         // 認証失敗
@@ -50,7 +41,7 @@ class AuthController extends Controller
     }
 
     // ログアウト処理
-    public function logout()
+    public function logout(Request $request)
     {
         Session::forget('authenticated');
         Session::forget('username');

@@ -168,25 +168,6 @@ const LINEMiniApp = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      {/* ヘッダー */}
-      <div className="fixed top-0 left-0 w-full bg-white border-b border-gray-200 py-2 px-4 flex justify-between items-center shadow-sm z-50">
-        <h1 className="text-lg font-semibold text-gray-800">シフト管理システム</h1>
-        <div className="flex items-center space-x-2">
-          <a
-            href="/shifts-table"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center"
-          >
-            <History size={14} className="mr-1" />
-            シフト表
-          </a>
-          <form method="POST" action="/logout" className="inline">
-            <button type="submit" className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm">
-              ログアウト
-            </button>
-          </form>
-        </div>
-      </div>
-
       {/* メインコンテンツ - 上部余白を追加 */}
       <div className="flex-1" style={{ paddingTop: '60px' }}>
         {/* カレンダー */}

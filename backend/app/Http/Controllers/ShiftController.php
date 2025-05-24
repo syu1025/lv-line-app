@@ -13,6 +13,7 @@ class ShiftController extends Controller
     {
         Log::info('シフト登録リクエスト:', $request->all());
 
+
         $validator = Validator::make($request->all(), [
             'shifts' => 'required|array',
             'shifts.*.date' => 'required|date',
@@ -28,18 +29,14 @@ class ShiftController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // LINEユーザーIDを取得（実際の実装ではLINEログインから取得）
-        $lineUserId = $request->header('X-Line-User-Id') ?? 'test_user';
-
+        $request = request();
+        $user = $request->attributes->get('user');
         try {
             foreach ($request->shifts as $shiftData) {
                 Log::info('シフトデータ保存:', $shiftData);
-                Shift::updateOrCreate(
-                    [
+                Shift::create([
                         'date' => $shiftData['date'],
-                        'line_user_id' => $lineUserId
-                    ],
-                    [
+                        'user_name' => $user->name,
                         'type' => $shiftData['type'],
                         'start_time' => $shiftData['start_time'] ?? null,
                         'end_time' => $shiftData['end_time'] ?? null,
@@ -58,31 +55,39 @@ class ShiftController extends Controller
         }
     }
 
+    //apiでシフトデータを取得
     public function index(Request $request)
     {
-        // LINEユーザーIDを取得（実際の実装ではLINEログインから取得）
-        $lineUserId = $request->header('X-Line-User-Id') ?? 'test_user';
 
-        $shifts = Shift::where('line_user_id', $lineUserId)
+        // ミドルウェアで設定されたユーザー情報を取得
+        $user = $request->attributes->get('user');
+        $shifts = Shift::where('user_name', $user->name)
             ->orderBy('date')
             ->get();
 
-        return response()->json($shifts);
+        return response()->json([
+            'shifts' => $shifts,
+            'user' => $user
+        ]);
+        //return view('shifts-table', compact('shifts', 'user'));
     }
 
     /**
      * シフト表のデータを取得
      */
-    public function getShiftsTable()
+    public function getShiftsTable(Request $request)
     {
+        $user = $request->attributes->get('user');
+        $userName = $user ? $user->name : 'ゲスト';
+        //dd($userName);
         // すべてのシフトを取得
         // 全シフトを日付でグループ化して取得
-        $shifts_date = Shift::orderBy('date')
-            ->get()
-            ->groupBy('date');
+        //$shifts_date = Shift::orderBy('date')
+        //    ->get()
+        //    ->groupBy('date');
 
         //dd($shifts);
 
-        return view('shifts-table', compact('shifts_date'));
+        return view('shifts-table', compact('userName'));
     }
 }

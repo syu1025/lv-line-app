@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>シフト表</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>シフト表 - シフト管理システム</title>
     <!-- Tailwind CSSを使用 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -106,9 +107,12 @@
 <body class="bg-gray-100">
     <!-- ヘッダー -->
     <div id="header" class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 py-2 px-4 flex justify-between items-center shadow-sm z-50">
-        <h1 class="text-lg font-semibold text-gray-800">シフト管理システム</h1>
+        <div class="flex items-center space-x-4">
+            <h1 class="text-lg font-semibold text-gray-800">シフト管理</h1>
+            <span class="text-sm text-gray-600">ログインユーザー：{{ $user->name ?? 'ゲスト' }}さん</span>
+        </div>
         <div class="flex items-center space-x-2">
-            <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+            <a href="/" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
                 シフト登録
             </a>
             <form method="POST" action="{{ route('logout') }}" class="inline">
@@ -121,261 +125,272 @@
     </div>
 
     <div class="w-full max-w-full px-4 mx-auto" style="padding-top: 60px;">
-        <main>
-            <!-- 共通スクロールコンテナ -->
+        <!-- ローディング表示 -->
+        <div id="loading" class="text-center py-8">
+            <p>シフトデータを読み込み中...</p>
+        </div>
+
+        <!-- エラー表示 -->
+        <div id="error" class="text-center py-8 text-red-600" style="display: none;">
+            <p>データの読み込みに失敗しました。</p>
+        </div>
+
+        <main id="main-content" style="display: none;">
+            <!-- 日付フィルター -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">シフト表</h2>
+                <div class="date-filter">
+                    <label for="start_date" class="text-sm">開始日:</label>
+                    <input type="date" id="start_date" name="start_date" class="date-input">
+                    <label for="end_date" class="text-sm">終了日:</label>
+                    <input type="date" id="end_date" name="end_date" class="date-input">
+                    <button id="filter_button" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">表示</button>
+                </div>
+            </div>
+
+            <!-- シフト表コンテナ -->
             <div class="sync-scroll" id="table-container">
                 <!-- 講義シフト表 -->
                 <div class="mb-4">
-                    <div class="flex justify-between items-center mb-2 sm:mb-4">
-                        <h2 class="text-lg sm:text-xl font-semibold">講義指定</h2>
-                        <div class="date-filter">
-                            <label for="start_date" class="text-sm">開始日:</label>
-                            <input type="date" id="start_date" name="start_date" class="date-input">
-                            <label for="end_date" class="text-sm">終了日:</label>
-                            <input type="date" id="end_date" name="end_date" class="date-input">
-                            <button id="filter_button" class="filter-button">表示</button>
-                        </div>
-                    </div>
+                    <h3 class="text-lg font-semibold mb-2">講義指定</h3>
                     <div class="hide-scrollbar">
-                        <table class="border-collapse border border-gray-300 bg-white">
-                            <thead>
-                                <tr>
-                                    <th class="border border-gray-300 col-fixed sticky-col">講義</th>
-                                    @php
-                                        // シフトデータからユニークな日付を抽出
-                                        $dates = $shifts_date->keys()->toArray();
-                                        // 現在の日付を取得（表示用）
-                                        $today = \Carbon\Carbon::today();
-
-                                        // フィルタリングを削除し、すべての日付を表示
-                                        $filteredDates = $dates;
-                                    @endphp
-
-                                    @foreach ($filteredDates as $date)
-                                        <th class="border border-gray-300 col-date" data-date="{{ $date }}">{{ \Carbon\Carbon::parse($date)->format('n/j') }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ([4, 5, 6, 7] as $lecture)
-                                    <tr>
-                                        <td class="border border-gray-300 sticky-col">{{ $lecture }}講</td>
-                                        @foreach ($filteredDates as $date)
-                                            <td id="lecture-{{ $lecture }}-{{ $loop->index }}" class="border border-gray-300 col-date" data-date="{{ $date }}">
-                                                @if (isset($shifts_date[$date]))
-                                                    @foreach ($shifts_date[$date] as $shift)
-                                                        @if ($shift->type === 'lecture' && is_array($shift->lectures) && in_array($lecture, $shift->lectures))
-                                                            {{ $shift->line_user_id }}
-                                                            @if (!$loop->last), @endif
-                                                        @endif
-                                                    @endforeach
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
+                        <table id="lecture-table" class="border-collapse border border-gray-300 bg-white">
+                            <!-- JavaScriptで動的生成 -->
                         </table>
                     </div>
                 </div>
 
                 <!-- 時間シフト表 -->
                 <div>
-                    <h2 class="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">時間指定</h2>
+                    <h3 class="text-lg font-semibold mb-2">時間指定</h3>
                     <div class="overflow-x-auto">
-                        <table class="border-collapse border border-gray-300 bg-white">
-                            <thead>
-                                <tr>
-                                    <th class="border border-gray-300 col-fixed sticky-col">ユーザー</th>
-                                    @foreach ($filteredDates as $date)
-                                        <th class="border border-gray-300 col-date" data-date="{{ $date }}">{{ \Carbon\Carbon::parse($date)->format('n/j') }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    // 時間帯シフトをユーザーごとにグループ化
-                                    $userIds = [];
-                                    foreach ($shifts_date as $date => $shifts) {
-                                        if (in_array($date, $filteredDates)) {
-                                            foreach ($shifts as $shift) {
-                                                if (!in_array($shift->line_user_id, $userIds)) {
-                                                    $userIds[] = $shift->line_user_id;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    sort($userIds);
-                                @endphp
-
-                                @foreach ($userIds as $userId)
-                                    <tr>
-                                        <td class="border border-gray-300 sticky-col">{{ $userId }}</td>
-                                        @foreach ($filteredDates as $date)
-                                            <td class="border border-gray-300 col-date" data-date="{{ $date }}">
-                                                @if (isset($shifts_date[$date]))
-                                                    @foreach ($shifts_date[$date] as $shift)
-                                                        @if ($shift->line_user_id === $userId && $shift->type === 'time')
-                                                            @php
-                                                                $startTime = $shift->start_time ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : '';
-                                                                $endTime = $shift->end_time ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : '';
-                                                            @endphp
-                                                            {{ $startTime }} ~ {{ $endTime }}
-                                                        @endif
-                                                    @endforeach
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
+                        <table id="time-table" class="border-collapse border border-gray-300 bg-white">
+                            <!-- JavaScriptで動的生成 -->
                         </table>
                     </div>
                 </div>
             </div>
         </main>
-
-        <footer class="py-4 mt-8 text-center text-gray-500 text-sm">
-            <p>© {{ date('Y') }} シフト管理システム</p>
-        </footer>
     </div>
 
     <script>
-        // スクロールを同期させる
-        document.addEventListener('DOMContentLoaded', function() {
-            const tableContainer = document.getElementById('table-container');
-            const tables = tableContainer.querySelectorAll('.hide-scrollbar, .overflow-x-auto');
+        // ページロード時にAPIからデータを取得
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // APIからシフトデータを取得
+                const response = await fetch('/api/shifts', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('データの取得に失敗しました');
+                }
+
+                const data = await response.json();
+
+                // ローディングを非表示
+                document.getElementById('loading').style.display = 'none';
+
+                // メインコンテンツを表示
+                document.getElementById('main-content').style.display = 'block';
+
+                // シフト表を生成
+                generateShiftTables(data.shifts);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        });
+
+        // シフト表を生成する関数
+        function generateShiftTables(shifts) {
+            // 日付でグループ化
+            const shiftsByDate = {};
+            shifts.forEach(shift => {
+                if (!shiftsByDate[shift.date]) {
+                    shiftsByDate[shift.date] = [];
+                }
+                shiftsByDate[shift.date].push(shift);
+            });
+
+            const dates = Object.keys(shiftsByDate).sort();
+
+            // 講義シフト表を生成
+            generateLectureTable(dates, shiftsByDate);
+
+            // 時間シフト表を生成
+            generateTimeTable(dates, shiftsByDate);
+
+            // スクロール連動を設定（テーブル生成後）
+            setupScrollSync();
+
+            // 日付フィルター機能を設定
+            setupDateFilter(dates, shiftsByDate);
+        }
+
+        // 講義シフト表生成
+        function generateLectureTable(dates, shiftsByDate) {
+            const table = document.getElementById('lecture-table');
+
+            // ヘッダー生成
+            let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">講義</th>';
+            dates.forEach(date => {
+                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
+                headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
+            });
+            headerHtml += '</tr></thead>';
+
+            // ボディ生成
+            let bodyHtml = '<tbody>';
+            [4, 5, 6, 7].forEach(lecture => {
+                bodyHtml += `<tr><td class="border border-gray-300 sticky-col">${lecture}講</td>`;
+                dates.forEach(date => {
+                    const shiftsOnDate = shiftsByDate[date] || [];
+                    const lectureShifts = shiftsOnDate.filter(shift =>
+                        shift.type === 'lecture' &&
+                        shift.lectures &&
+                        shift.lectures.includes(lecture)
+                    );
+                    const userNames = lectureShifts.map(shift => shift.user_name).join(', ');
+                    bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${userNames}</td>`;
+                });
+                bodyHtml += '</tr>';
+            });
+            bodyHtml += '</tbody>';
+
+            table.innerHTML = headerHtml + bodyHtml;
+        }
+
+        // 時間シフト表生成
+        function generateTimeTable(dates, shiftsByDate) {
+            const table = document.getElementById('time-table');
+
+            // ユーザー一覧を取得
+            const users = [...new Set(
+                Object.values(shiftsByDate)
+                    .flat()
+                    .map(shift => shift.user_name)
+            )].sort();
+
+            // ヘッダー生成
+            let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">ユーザー</th>';
+            dates.forEach(date => {
+                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
+                headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
+            });
+            headerHtml += '</tr></thead>';
+
+            // ボディ生成
+            let bodyHtml = '<tbody>';
+            users.forEach(user => {
+                bodyHtml += `<tr><td class="border border-gray-300 sticky-col">${user}</td>`;
+                dates.forEach(date => {
+                    const shiftsOnDate = shiftsByDate[date] || [];
+                    const userTimeShift = shiftsOnDate.find(shift =>
+                        shift.user_name === user && shift.type === 'time'
+                    );
+                    let timeText = '';
+                    if (userTimeShift) {
+                        const startTime = userTimeShift.start_time ? userTimeShift.start_time.substring(0, 5) : '';
+                        const endTime = userTimeShift.end_time ? userTimeShift.end_time.substring(0, 5) : '';
+                        timeText = `${startTime} ~ ${endTime}`;
+                    }
+                    bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${timeText}</td>`;
+                });
+                bodyHtml += '</tr>';
+            });
+            bodyHtml += '</tbody>';
+
+            table.innerHTML = headerHtml + bodyHtml;
+        }
+
+        // テーブルスクロール連動機能
+        function setupScrollSync() {
+            const lectureTableContainer = document.querySelector('#lecture-table').closest('.hide-scrollbar');
+            const timeTableContainer = document.querySelector('#time-table').closest('.overflow-x-auto');
+
+            let isScrolling = false;
+
+            // 講義テーブルのスクロールイベント
+            lectureTableContainer.addEventListener('scroll', function() {
+                if (isScrolling) return;
+                isScrolling = true;
+
+                // 時間テーブルのスクロール位置を同期
+                timeTableContainer.scrollLeft = this.scrollLeft;
+
+                // 次のフレームでフラグをリセット
+                requestAnimationFrame(() => {
+                    isScrolling = false;
+                });
+            });
+
+            // 時間テーブルのスクロールイベント
+            timeTableContainer.addEventListener('scroll', function() {
+                if (isScrolling) return;
+                isScrolling = true;
+
+                // 講義テーブルのスクロール位置を同期
+                lectureTableContainer.scrollLeft = this.scrollLeft;
+
+                // 次のフレームでフラグをリセット
+                requestAnimationFrame(() => {
+                    isScrolling = false;
+                });
+            });
+        }
+
+        // 日付フィルター機能
+        function setupDateFilter(allDates, shiftsByDate) {
             const startDateInput = document.getElementById('start_date');
             const endDateInput = document.getElementById('end_date');
             const filterButton = document.getElementById('filter_button');
 
-            // 現在の日付を取得
-            const today = new Date();
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
-            // 日付選択の初期値を空に設定（すべての日付を表示）
+            // 日付選択の初期値を空に設定
             startDateInput.value = '';
             endDateInput.value = '';
 
             // フィルターボタンのクリックイベント
             filterButton.addEventListener('click', function() {
-                // 開始日だけが指定されている場合は、その日以降をすべて表示
                 if (startDateInput.value && !endDateInput.value) {
                     const startDate = new Date(startDateInput.value);
-                    filterFutureDate(startDate);
-                }
-                // 両方指定されている場合は範囲指定
-                else if (startDateInput.value && endDateInput.value) {
+                    filterByDate(startDate, null, allDates, shiftsByDate);
+                } else if (startDateInput.value && endDateInput.value) {
                     const startDate = new Date(startDateInput.value);
                     const endDate = new Date(endDateInput.value);
-                    filterTables(startDate, endDate);
-                }
-                // 両方空の場合はすべて表示
-                else if (!startDateInput.value && !endDateInput.value) {
-                    showAllDates();
-                }
-                // 終了日だけの場合はエラー
-                else {
+                    filterByDate(startDate, endDate, allDates, shiftsByDate);
+                } else if (!startDateInput.value && !endDateInput.value) {
+                    // 全て表示
+                    generateLectureTable(allDates, shiftsByDate);
+                    generateTimeTable(allDates, shiftsByDate);
+                    setupScrollSync(); // 再設定
+                } else {
                     alert('開始日を入力してください');
                 }
             });
+        }
 
-            // すべての日付を表示する関数
-            function showAllDates() {
-                const allDateColumns = document.querySelectorAll('th[data-date], td[data-date]');
-                allDateColumns.forEach(column => {
-                    column.style.display = '';
-                });
-                adjustTableWidths();
-            }
-
-            // 指定した日付以降のみ表示する関数
-            function filterFutureDate(startDate) {
-                const allDateColumns = document.querySelectorAll('th[data-date], td[data-date]');
-
-                allDateColumns.forEach(column => {
-                    const dateStr = column.getAttribute('data-date');
-                    const columnDate = new Date(dateStr);
-
-                    // startDate以降かどうかを判定
-                    if (columnDate >= startDate) {
-                        column.style.display = '';
-                    } else {
-                        column.style.display = 'none';
-                    }
-                });
-
-                // テーブル幅を再調整
-                adjustTableWidths();
-            }
-
-            // テーブルのフィルタリング関数
-            function filterTables(startDate, endDate) {
-                const allDateColumns = document.querySelectorAll('th[data-date], td[data-date]');
-
-                allDateColumns.forEach(column => {
-                    const dateStr = column.getAttribute('data-date');
-                    const columnDate = new Date(dateStr);
-
-                    // 指定した期間内かどうかを判定
-                    if (columnDate >= startDate && columnDate <= endDate) {
-                        column.style.display = '';
-                    } else {
-                        column.style.display = 'none';
-                    }
-                });
-
-                // テーブル幅を再調整
-                adjustTableWidths();
-            }
-
-            tables.forEach(table => {
-                table.addEventListener('scroll', function() {
-                    const scrollLeft = this.scrollLeft;
-                    tables.forEach(otherTable => {
-                        if (otherTable !== this) {
-                            otherTable.scrollLeft = scrollLeft;
-                        }
-                    });
-                });
+        // 日付フィルター実行
+        function filterByDate(startDate, endDate, allDates, shiftsByDate) {
+            const filteredDates = allDates.filter(date => {
+                const dateObj = new Date(date);
+                if (endDate) {
+                    return dateObj >= startDate && dateObj <= endDate;
+                } else {
+                    return dateObj >= startDate;
+                }
             });
 
-            // 初期表示時にテーブル幅を調整
-            function adjustTableWidths() {
-                const tableWidth = Math.max(
-                    document.documentElement.clientWidth,
-                    window.innerWidth || 0
-                );
-                const tables = document.querySelectorAll('table');
-
-                tables.forEach(table => {
-                    // 表示されている日付の列数を取得
-                    const dateColumns = table.querySelectorAll('th:not(.sticky-col):not([style*="display: none"])').length;
-                    // 使用可能な幅から固定列の幅を引く
-                    const availableWidth = tableWidth - 120; // 100px for fixed column + margins
-                    // 各日付列に割り当てる幅（最小値として100pxを設定）
-                    const columnWidth = Math.max(100, Math.floor(availableWidth / dateColumns));
-
-                    // 日付列のスタイルを更新
-                    const dateColNodes = table.querySelectorAll('.col-date:not([style*="display: none"])');
-                    dateColNodes.forEach(col => {
-                        col.style.width = `${columnWidth}px`;
-                        col.style.minWidth = `${columnWidth}px`;
-                    });
-                });
-            }
-
-            // 初回実行（全ての日付を表示）
-            showAllDates();
-
-            // ウィンドウサイズ変更時に再計算
-            window.addEventListener('resize', adjustTableWidths);
-        });
+            generateLectureTable(filteredDates, shiftsByDate);
+            generateTimeTable(filteredDates, shiftsByDate);
+            setupScrollSync(); // 再設定
+        }
     </script>
 </body>
 </html>

@@ -18,11 +18,11 @@ return new class extends Migration
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->json('lectures')->nullable();
-            $table->string('line_user_id');
+            $table->string('user_name');
             $table->timestamps();
 
             // 同じユーザーが同じ日に複数のシフトを登録できないようにする
-            $table->unique(['date', 'line_user_id']);
+            $table->unique(['date', 'user_name']);
         });
     }
 
