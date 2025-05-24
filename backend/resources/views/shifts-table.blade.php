@@ -102,6 +102,263 @@
                 align-items: stretch;
             }
         }
+
+        /* タイムライン用のスタイル */
+        .timeline-day {
+            min-width: 300px;
+            border-right: 2px solid #e5e7eb;
+            position: relative;
+        }
+
+        .timeline-header {
+            background-color: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .timeline-grid {
+            position: relative;
+            height: 480px; /* 14:00-22:00の8時間 × 60px */
+            background: linear-gradient(to bottom, transparent 59px, #e5e7eb 59px, #e5e7eb 60px, transparent 60px);
+            background-size: 100% 60px; /* 1時間 = 60px */
+        }
+
+        .time-axis {
+            width: 80px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .time-label {
+            position: absolute;
+            left: 0;
+            width: 70px;
+            text-align: right;
+            font-size: 0.75rem;
+            color: #6b7280;
+            transform: translateY(-50%);
+            padding-right: 10px;
+        }
+
+        .shift-block {
+            position: absolute;
+            left: 85px;
+            right: 10px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            color: white;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .shift-block.lecture {
+            background-color: #3b82f6; /* 青色：講義指定 */
+            border-left: 4px solid #1d4ed8;
+        }
+
+        .shift-block.time {
+            background-color: #10b981; /* 緑色：時間指定 */
+            border-left: 4px solid #047857;
+        }
+
+        .shift-block.overlap {
+            opacity: 0.8;
+            z-index: 15;
+        }
+
+        .timeline-container-wrapper {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            min-height: 580px;
+            overflow: hidden;
+        }
+
+        .timeline-content {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* メインコンテナのスクロール設定 */
+        #timeline-container {
+            overflow: hidden;
+        }
+
+        /* モバイル専用スタイル */
+        @media (max-width: 768px) {
+            /* 週間表示用のコンパクトスタイル */
+            .mobile-week-view .timeline-container-wrapper {
+                flex-direction: row;
+                gap: 0;
+                padding: 0.5rem;
+                min-height: 550px; /* 400px から 550px 程度に調整（ヘッダー分も考慮） */
+                overflow-x: auto;
+            }
+
+            .mobile-week-view .time-axis {
+                width: 50px;
+                position: sticky;
+                left: 0;
+                background: white;
+                z-index: 20;
+                border-right: 1px solid #e5e7eb;
+            }
+
+            .mobile-week-view .timeline-content {
+                flex-direction: row;
+                gap: 1px;
+                overflow-x: visible;
+                min-width: max-content;
+            }
+
+            .mobile-week-view .timeline-day {
+                min-width: 60px;
+                max-width: 60px;
+                border-right: 1px solid #e5e7eb;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .mobile-week-view .timeline-day:hover {
+                background-color: #f9fafb;
+            }
+
+            .mobile-week-view .timeline-day.selected {
+                background-color: #eff6ff;
+                border-right: 2px solid #3b82f6;
+            }
+
+            .mobile-week-view .timeline-header {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.7rem;
+                line-height: 1.2;
+                min-height: 60px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .mobile-week-view .timeline-grid {
+                height: 480px; /* 300px から 480px に変更 */
+                position: relative;
+            }
+
+            .mobile-week-view .shift-block {
+                left: 2px;
+                right: 2px;
+                font-size: 0.6rem;
+                padding: 1px 2px;
+                border-radius: 2px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                min-height: 20px; /* 最小高さを追加 */
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .mobile-week-view .shift-block .font-semibold {
+                font-size: 0.55rem;
+                line-height: 1;
+                margin-bottom: 1px;
+            }
+
+            .mobile-week-view .shift-block .text-xs {
+                font-size: 0.5rem;
+                line-height: 1;
+                opacity: 0.8;
+            }
+
+            .mobile-week-view .time-label {
+                font-size: 0.6rem;
+                width: 45px;
+                padding-right: 5px;
+            }
+
+            /* シングルデー詳細表示用 */
+            .mobile-day-view .timeline-container-wrapper {
+                flex-direction: column;
+                gap: 0;
+                padding: 0.5rem;
+                min-height: auto;
+            }
+
+            .mobile-day-view .time-axis {
+                width: 70px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 20;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 0.5rem;
+            }
+
+            .mobile-day-view .timeline-content {
+                flex-direction: column;
+                gap: 0;
+                overflow-x: hidden;
+            }
+
+            .mobile-day-view .timeline-day {
+                min-width: 100%;
+                border-right: none;
+                margin-bottom: 1rem;
+            }
+
+            .mobile-day-view .timeline-grid {
+                height: 600px;
+            }
+
+            .mobile-day-view .shift-block {
+                left: 80px;
+                right: 10px;
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+
+            .mobile-day-view .time-label {
+                font-size: 0.75rem;
+                width: 65px;
+            }
+        }
+
+        /* 日付ヘッダーのスタイル改善 */
+        .date-header-compact {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .date-number {
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .date-weekday {
+            font-size: 0.6rem;
+            color: #6b7280;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .today-indicator {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        .today-indicator .date-weekday {
+            color: #bfdbfe !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -136,9 +393,9 @@
         </div>
 
         <main id="main-content" style="display: none;">
-            <!-- 日付フィルター -->
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">シフト表</h2>
+            <!-- 日付フィルター（デスクトップ用） -->
+            <div class="hidden md:flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold"></h2>
                 <div class="date-filter">
                     <label for="start_date" class="text-sm">開始日:</label>
                     <input type="date" id="start_date" name="start_date" class="date-input">
@@ -148,36 +405,104 @@
                 </div>
             </div>
 
-            <!-- シフト表コンテナ -->
-            <div class="sync-scroll" id="table-container">
-                <!-- 講義シフト表 -->
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold mb-2">講義指定</h3>
-                    <div class="hide-scrollbar">
-                        <table id="lecture-table" class="border-collapse border border-gray-300 bg-white">
-                            <!-- JavaScriptで動的生成 -->
-                        </table>
+            <!-- モバイル用ヘッダー -->
+            <div class="md:hidden mb-4">
+                <h2 class="text-lg font-semibold mb-3">シフト表</h2>
+
+                <!-- 週間ナビゲーション -->
+                <div class="bg-white rounded-lg shadow-sm border p-3 mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <button id="prev-week" class="flex items-center px-2 py-1 text-gray-600 hover:text-gray-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div class="text-center">
+                            <div class="text-sm font-medium text-gray-800" id="week-range">
+                                <!-- JavaScriptで設定 -->
+                            </div>
+                        </div>
+
+                        <button id="next-week" class="flex items-center px-2 py-1 text-gray-600 hover:text-gray-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
                     </div>
+
+                    <button id="today-week-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-sm">
+                        今週
+                    </button>
                 </div>
 
-                <!-- 時間シフト表 -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-2">時間指定</h3>
-                    <div class="overflow-x-auto">
-                        <table id="time-table" class="border-collapse border border-gray-300 bg-white">
-                            <!-- JavaScriptで動的生成 -->
-                        </table>
+                <!-- ビュー切り替えタブ -->
+                <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
+                    <button id="week-tab" class="flex-1 py-2 px-3 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm">
+                        週間表示
+                    </button>
+                    <button id="day-tab" class="flex-1 py-2 px-3 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700">
+                        日別詳細
+                    </button>
+                </div>
+            </div>
+
+            <!-- タイムラインコンテナ -->
+            <div id="timeline-container" class="w-full">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+
+            <!-- モバイル用シングルデー詳細ビュー -->
+            <div id="single-day-container" class="hidden md:hidden">
+                <div class="bg-white rounded-lg shadow-sm border p-3 mb-4">
+                    <div class="flex items-center justify-between">
+                        <button id="back-to-week" class="flex items-center text-blue-500 hover:text-blue-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            週間表示に戻る
+                        </button>
+                        <div class="text-center">
+                            <div class="font-semibold" id="single-day-date"></div>
+                            <div class="text-xs text-gray-500" id="single-day-weekday"></div>
+                        </div>
+                        <div class="w-20"></div> <!-- スペーサー -->
                     </div>
+                </div>
+                <div id="single-day-timeline">
+                    <!-- シングルデーのタイムライン -->
                 </div>
             </div>
         </main>
     </div>
 
     <script>
+        // 講義コマと時間のマッピング
+        const lectureDefinitions = {
+            4: { name: '4講', start: '15:00', end: '16:30' },
+            5: { name: '5講', start: '16:40', end: '18:10' },
+            6: { name: '6講', start: '18:20', end: '19:50' },
+            7: { name: '7講', start: '20:00', end: '21:30' }
+        };
+
+        // タイムライン表示の設定
+        const timelineConfig = {
+            startHour: 14,
+            endHour: 22,
+            hourHeight: 60, // 1時間あたりのピクセル数
+            minuteHeight: 1 // 1分あたりのピクセル数
+        };
+
+        // モバイル表示の状態管理
+        let mobileViewState = {
+            currentView: 'week', // 'week' or 'day'
+            selectedDate: null,
+            weekStartDate: null
+        };
+
         // ページロード時にAPIからデータを取得
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                // APIからシフトデータを取得
                 const response = await fetch('/api/shifts', {
                     method: 'GET',
                     headers: {
@@ -192,14 +517,14 @@
 
                 const data = await response.json();
 
-                // ローディングを非表示
-                document.getElementById('loading').style.display = 'none';
+                // デバッグ用ログ
+                console.log('取得したシフトデータ:', data.shifts);
 
-                // メインコンテンツを表示
+                document.getElementById('loading').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
 
-                // シフト表を生成
-                generateShiftTables(data.shifts);
+                // レスポンシブ表示の初期化
+                initializeResponsiveView(data.shifts);
 
             } catch (error) {
                 console.error('Error:', error);
@@ -208,8 +533,332 @@
             }
         });
 
-        // シフト表を生成する関数
-        function generateShiftTables(shifts) {
+        // レスポンシブ表示の初期化
+        function initializeResponsiveView(shifts) {
+            const isMobile = window.innerWidth < 768;
+
+            if (isMobile) {
+                setupMobileView(shifts);
+            } else {
+                generateTimelineView(shifts);
+            }
+
+            // リサイズイベントの監視
+            window.addEventListener('resize', () => {
+                const newIsMobile = window.innerWidth < 768;
+                if (newIsMobile !== isMobile) {
+                    location.reload(); // 簡易的にリロード
+                }
+            });
+        }
+
+        // モバイルビューのセットアップ
+        function setupMobileView(shifts) {
+            console.log('setupMobileView - 受信したシフト:', shifts);
+
+            // 今日を基準とした週の開始日を設定
+            const today = new Date();
+            // mobileViewState.weekStartDate = getWeekStartDate(today); // 元のコード
+
+            // --- テスト用日付設定 ---
+            // 例: 2025年5月7日を含む週を表示したい場合 (2025年5月5日月曜日を開始日とする)
+            mobileViewState.weekStartDate = new Date("2025-05-05");
+            // --- ここまでテスト用日付設定 ---
+
+            mobileViewState.selectedDate = new Date(mobileViewState.weekStartDate); // 週の初日を選択状態にするか、todayのままにするか検討
+            // mobileViewState.selectedDate = today; // もし「今日」を選択状態にしたい場合はこちら
+
+            // データを日付でグループ化
+            const shiftsByDate = {};
+            shifts.forEach(shift => {
+                if (!shiftsByDate[shift.date]) {
+                    shiftsByDate[shift.date] = [];
+                }
+                shiftsByDate[shift.date].push(shift);
+            });
+
+            console.log('setupMobileView - グループ化後:', shiftsByDate);
+            console.log('setupMobileView - 表示対象の週の開始日:', mobileViewState.weekStartDate.toISOString().split('T')[0]);
+
+
+            // 週間表示を初期表示
+            showMobileWeekView(shiftsByDate);
+            setupMobileNavigation(shiftsByDate, shifts);
+        }
+
+        // 週の開始日を取得（月曜日開始）
+        function getWeekStartDate(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜日を週の開始とする
+            return new Date(d.setDate(diff));
+        }
+
+        // 5日間の日付配列を生成
+        function getFiveDayDates(startDate) {
+            const dates = [];
+            for (let i = 0; i < 5; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                dates.push(date.toISOString().split('T')[0]);
+            }
+            return dates;
+        }
+
+        // モバイル週間表示
+        function showMobileWeekView(shiftsByDate) {
+            const container = document.getElementById('timeline-container');
+            const singleDayContainer = document.getElementById('single-day-container');
+
+            // ビューの切り替え
+            container.style.display = 'block';
+            singleDayContainer.style.display = 'none';
+            container.className = 'w-full mobile-week-view';
+
+            // 5日間の日付を取得
+            const dates = getFiveDayDates(mobileViewState.weekStartDate);
+
+            // 週間範囲の表示更新
+            updateWeekRangeDisplay(dates);
+
+            // タイムラインを描画
+            renderMobileWeekTimeline(dates, shiftsByDate);
+        }
+
+        // 週間範囲の表示更新
+        function updateWeekRangeDisplay(dates) {
+            const weekRangeElement = document.getElementById('week-range');
+            if (weekRangeElement) {
+                const startDate = new Date(dates[0]);
+                const endDate = new Date(dates[dates.length - 1]);
+                const startStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
+                const endStr = `${endDate.getMonth() + 1}/${endDate.getDate()}`;
+                weekRangeElement.textContent = `${startStr} - ${endStr}`;
+            }
+        }
+
+        // モバイル週間タイムライン描画
+        function renderMobileWeekTimeline(dates, shiftsByDate) {
+            const container = document.getElementById('timeline-container');
+            const today = new Date().toISOString().split('T')[0];
+
+            // デバッグ用ログ
+            console.log('renderMobileWeekTimeline - dates:', dates);
+            console.log('renderMobileWeekTimeline - shiftsByDate:', shiftsByDate);
+
+            let html = `
+                <div class="timeline-container-wrapper">
+                    <div class="time-axis">
+                        ${generateTimeAxis()}
+                    </div>
+                    <div class="timeline-content">
+                        ${dates.map(date => {
+                            const isToday = date === today;
+                            const dateObj = new Date(date);
+                            const dayNum = dateObj.getDate();
+                            const weekday = dateObj.toLocaleDateString('ja-JP', { weekday: 'short' });
+
+                            // デバッグ用ログ
+                            console.log(`日付 ${date} のシフト:`, shiftsByDate[date] || []);
+
+                            return `
+                                <div class="timeline-day ${isToday ? 'today-indicator' : ''}" data-date="${date}" onclick="showDayDetail('${date}')">
+                                    <div class="timeline-header">
+                                        <div class="date-header-compact">
+                                            <div class="date-number">${dayNum}</div>
+                                            <div class="date-weekday">${weekday}</div>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-grid">
+                                        ${generateMobileShiftBlocks(shiftsByDate[date] || [])}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // モバイル用シフトブロック生成（修正版）
+        function generateMobileShiftBlocks(shifts) {
+            console.log('[DEBUG] generateMobileShiftBlocks - 入力シフト (生データ):', JSON.parse(JSON.stringify(shifts)));
+
+            const processedShifts = processShiftsForTimeline(shifts);
+            console.log('[DEBUG] generateMobileShiftBlocks - 処理後シフト (processedShifts):', JSON.parse(JSON.stringify(processedShifts)));
+
+            if (!processedShifts || processedShifts.length === 0) {
+                console.log('[DEBUG] generateMobileShiftBlocks - 表示する処理済みシフトはありません。');
+                return '';
+            }
+
+            return processedShifts.map(shift => {
+                if (!shift.startTime || !shift.endTime) {
+                    console.error('[DEBUG] generateMobileShiftBlocks - startTimeまたはendTimeが未定義です:', shift);
+                    return ''; // エラーケース
+                }
+                const startMinutes = timeToMinutes(shift.startTime);
+                const endMinutes = timeToMinutes(shift.endTime);
+
+                if (isNaN(startMinutes) || isNaN(endMinutes)) {
+                    console.error('[DEBUG] generateMobileShiftBlocks - startMinutesまたはendMinutesがNaNです:', shift, shift.startTime, shift.endTime);
+                    return '';
+                }
+
+                const duration = endMinutes - startMinutes;
+
+                const baseMinutes = timelineConfig.startHour * 60;
+                const topPosition = (startMinutes - baseMinutes) * timelineConfig.minuteHeight;
+                const height = duration * timelineConfig.minuteHeight;
+
+                console.log(`[DEBUG] generateMobileShiftBlocks - シフトブロック計算値:
+                    ユーザー: ${shift.user_name},
+                    時間: ${shift.startTime}-${shift.endTime},
+                    startMin: ${startMinutes}, endMin: ${endMinutes}, durationMin: ${duration},
+                    top: ${topPosition}px, height: ${height}px,
+                    displayName: ${shift.displayName}`);
+
+                if (height <= 0) {
+                    console.warn(`[DEBUG] generateMobileShiftBlocks - 計算されたheightが0以下です: height=${height}, shift:`, shift);
+                }
+                 if (topPosition < 0 || topPosition > 480) { // 480はグリッドの高さ
+                    console.warn(`[DEBUG] generateMobileShiftBlocks - topPositionがグリッド範囲外の可能性があります: top=${topPosition}, shift:`, shift);
+                }
+
+
+                return `
+                    <div class="shift-block ${shift.shiftType}"
+                         style="top: ${topPosition}px; height: ${height}px;"
+                         title="${shift.displayName}">
+                        <div class="font-semibold">${shift.user_name}</div>
+                        <div class="text-xs">${shift.startTime} - ${shift.endTime}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 日別詳細表示
+        function showDayDetail(date) {
+            mobileViewState.selectedDate = new Date(date);
+            mobileViewState.currentView = 'day';
+
+            const container = document.getElementById('timeline-container');
+            const singleDayContainer = document.getElementById('single-day-container');
+
+            // ビューの切り替え
+            container.style.display = 'none';
+            singleDayContainer.style.display = 'block';
+
+            // 日付情報の更新
+            const dateObj = new Date(date);
+            document.getElementById('single-day-date').textContent =
+                `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+            document.getElementById('single-day-weekday').textContent =
+                dateObj.toLocaleDateString('ja-JP', { weekday: 'long' });
+
+            // 現在のシフトデータから該当日のデータを取得
+            renderSingleDayTimelineFromCache(date);
+        }
+
+        // キャッシュからシングルデータイムライン描画
+        function renderSingleDayTimelineFromCache(date) {
+            // グローバルなシフトデータを使用
+            if (window.cachedShifts) {
+                const shiftsByDate = {};
+                window.cachedShifts.forEach(shift => {
+                    if (!shiftsByDate[shift.date]) {
+                        shiftsByDate[shift.date] = [];
+                    }
+                    shiftsByDate[shift.date].push(shift);
+                });
+
+                const singleDayTimeline = document.getElementById('single-day-timeline');
+                singleDayTimeline.className = 'mobile-day-view';
+
+                const html = `
+                    <div class="timeline-container-wrapper">
+                        <div class="time-axis">
+                            ${generateTimeAxis()}
+                        </div>
+                        <div class="timeline-content">
+                            ${generateDayTimeline(date, shiftsByDate[date] || [])}
+                        </div>
+                    </div>
+                `;
+
+                singleDayTimeline.innerHTML = html;
+            }
+        }
+
+        // モバイルナビゲーションのセットアップ
+        function setupMobileNavigation(shiftsByDate, allShifts) {
+            // シフトデータをキャッシュ
+            window.cachedShifts = allShifts;
+
+            // 週間ナビゲーション
+            document.getElementById('prev-week')?.addEventListener('click', () => {
+                mobileViewState.weekStartDate.setDate(mobileViewState.weekStartDate.getDate() - 7);
+                showMobileWeekView(shiftsByDate);
+            });
+
+            document.getElementById('next-week')?.addEventListener('click', () => {
+                mobileViewState.weekStartDate.setDate(mobileViewState.weekStartDate.getDate() + 7);
+                showMobileWeekView(shiftsByDate);
+            });
+
+            document.getElementById('today-week-btn')?.addEventListener('click', () => {
+                const today = new Date();
+                mobileViewState.weekStartDate = getWeekStartDate(today);
+                showMobileWeekView(shiftsByDate);
+            });
+
+            // ビュー切り替えタブ
+            document.getElementById('week-tab')?.addEventListener('click', () => {
+                if (mobileViewState.currentView !== 'week') {
+                    mobileViewState.currentView = 'week';
+                    showMobileWeekView(shiftsByDate);
+                    updateTabState('week');
+                }
+            });
+
+            document.getElementById('day-tab')?.addEventListener('click', () => {
+                if (mobileViewState.currentView !== 'day') {
+                    const today = new Date().toISOString().split('T')[0];
+                    showDayDetail(today);
+                    updateTabState('day');
+                }
+            });
+
+            // 週間表示に戻るボタン
+            document.getElementById('back-to-week')?.addEventListener('click', () => {
+                mobileViewState.currentView = 'week';
+                showMobileWeekView(shiftsByDate);
+                updateTabState('week');
+            });
+        }
+
+        // タブの状態更新
+        function updateTabState(activeTab) {
+            const weekTab = document.getElementById('week-tab');
+            const dayTab = document.getElementById('day-tab');
+
+            if (activeTab === 'week') {
+                weekTab?.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+                weekTab?.classList.remove('text-gray-500');
+                dayTab?.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                dayTab?.classList.add('text-gray-500');
+            } else {
+                dayTab?.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+                dayTab?.classList.remove('text-gray-500');
+                weekTab?.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                weekTab?.classList.add('text-gray-500');
+            }
+        }
+
+        // 既存の関数（デスクトップ用）
+        function generateTimelineView(shifts) {
             // 日付でグループ化
             const shiftsByDate = {};
             shifts.forEach(shift => {
@@ -221,163 +870,179 @@
 
             const dates = Object.keys(shiftsByDate).sort();
 
-            // 講義シフト表を生成
-            generateLectureTable(dates, shiftsByDate);
-
-            // 時間シフト表を生成
-            generateTimeTable(dates, shiftsByDate);
-
-            // スクロール連動を設定（テーブル生成後）
-            setupScrollSync();
+            // タイムラインを描画
+            renderTimeline(dates, shiftsByDate);
 
             // 日付フィルター機能を設定
-            setupDateFilter(dates, shiftsByDate);
+            setupTimelineFilter(dates, shiftsByDate);
         }
 
-        // 講義シフト表生成
-        function generateLectureTable(dates, shiftsByDate) {
-            const table = document.getElementById('lecture-table');
+        // タイムライン描画関数
+        function renderTimeline(dates, shiftsByDate) {
+            const container = document.getElementById('timeline-container');
 
-            // ヘッダー生成
-            let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">講義</th>';
-            dates.forEach(date => {
-                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
-                headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
-            });
-            headerHtml += '</tr></thead>';
+            // コンテナのHTML構造を作成
+            let html = `
+                <div class="timeline-container-wrapper">
+                    <div class="time-axis">
+                        ${generateTimeAxis()}
+                    </div>
+                    <div class="timeline-content">
+                        ${dates.map(date => generateDayTimeline(date, shiftsByDate[date] || [])).join('')}
+                    </div>
+                </div>
+            `;
 
-            // ボディ生成
-            let bodyHtml = '<tbody>';
-            [4, 5, 6, 7].forEach(lecture => {
-                bodyHtml += `<tr><td class="border border-gray-300 sticky-col">${lecture}講</td>`;
-                dates.forEach(date => {
-                    const shiftsOnDate = shiftsByDate[date] || [];
-                    const lectureShifts = shiftsOnDate.filter(shift =>
-                        shift.type === 'lecture' &&
-                        shift.lectures &&
-                        shift.lectures.includes(lecture)
-                    );
-                    const userNames = lectureShifts.map(shift => shift.user_name).join(', ');
-                    bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${userNames}</td>`;
-                });
-                bodyHtml += '</tr>';
-            });
-            bodyHtml += '</tbody>';
-
-            table.innerHTML = headerHtml + bodyHtml;
+            container.innerHTML = html;
         }
 
-        // 時間シフト表生成
-        function generateTimeTable(dates, shiftsByDate) {
-            const table = document.getElementById('time-table');
-
-            // ユーザー一覧を取得
-            const users = [...new Set(
-                Object.values(shiftsByDate)
-                    .flat()
-                    .map(shift => shift.user_name)
-            )].sort();
-
-            // ヘッダー生成
-            let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">ユーザー</th>';
-            dates.forEach(date => {
-                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
-                headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
-            });
-            headerHtml += '</tr></thead>';
-
-            // ボディ生成
-            let bodyHtml = '<tbody>';
-            users.forEach(user => {
-                bodyHtml += `<tr><td class="border border-gray-300 sticky-col">${user}</td>`;
-                dates.forEach(date => {
-                    const shiftsOnDate = shiftsByDate[date] || [];
-                    const userTimeShift = shiftsOnDate.find(shift =>
-                        shift.user_name === user && shift.type === 'time'
-                    );
-                    let timeText = '';
-                    if (userTimeShift) {
-                        const startTime = userTimeShift.start_time ? userTimeShift.start_time.substring(0, 5) : '';
-                        const endTime = userTimeShift.end_time ? userTimeShift.end_time.substring(0, 5) : '';
-                        timeText = `${startTime} ~ ${endTime}`;
-                    }
-                    bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${timeText}</td>`;
-                });
-                bodyHtml += '</tr>';
-            });
-            bodyHtml += '</tbody>';
-
-            table.innerHTML = headerHtml + bodyHtml;
+        // 時間軸を生成
+        function generateTimeAxis() {
+            let html = '';
+            for (let hour = timelineConfig.startHour; hour <= timelineConfig.endHour; hour++) {
+                const topPosition = (hour - timelineConfig.startHour) * timelineConfig.hourHeight;
+                html += `
+                    <div class="time-label" style="top: ${topPosition}px;">
+                        ${hour.toString().padStart(2, '0')}:00
+                    </div>
+                `;
+            }
+            return html;
         }
 
-        // テーブルスクロール連動機能
-        function setupScrollSync() {
-            const lectureTableContainer = document.querySelector('#lecture-table').closest('.hide-scrollbar');
-            const timeTableContainer = document.querySelector('#time-table').closest('.overflow-x-auto');
-
-            let isScrolling = false;
-
-            // 講義テーブルのスクロールイベント
-            lectureTableContainer.addEventListener('scroll', function() {
-                if (isScrolling) return;
-                isScrolling = true;
-
-                // 時間テーブルのスクロール位置を同期
-                timeTableContainer.scrollLeft = this.scrollLeft;
-
-                // 次のフレームでフラグをリセット
-                requestAnimationFrame(() => {
-                    isScrolling = false;
-                });
+        // 1日分のタイムラインを生成
+        function generateDayTimeline(date, shifts) {
+            const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
+                month: 'numeric',
+                day: 'numeric',
+                weekday: 'short'
             });
 
-            // 時間テーブルのスクロールイベント
-            timeTableContainer.addEventListener('scroll', function() {
-                if (isScrolling) return;
-                isScrolling = true;
+            // シフトデータを時間情報付きで変換
+            const processedShifts = processShiftsForTimeline(shifts);
 
-                // 講義テーブルのスクロール位置を同期
-                lectureTableContainer.scrollLeft = this.scrollLeft;
-
-                // 次のフレームでフラグをリセット
-                requestAnimationFrame(() => {
-                    isScrolling = false;
-                });
-            });
+            return `
+                <div class="timeline-day">
+                    <div class="timeline-header">
+                        ${formattedDate}
+                    </div>
+                    <div class="timeline-grid">
+                        ${processedShifts.map(shift => generateShiftBlock(shift)).join('')}
+                    </div>
+                </div>
+            `;
         }
 
-        // 日付フィルター機能
-        function setupDateFilter(allDates, shiftsByDate) {
+        // シフトデータを時間情報付きで処理（修正版）
+        function processShiftsForTimeline(shifts) {
+            console.log('[DEBUG] processShiftsForTimeline - 入力シフト:', JSON.parse(JSON.stringify(shifts))); // 入力データをディープコピーしてログ
+            const processedShifts = [];
+
+            if (!Array.isArray(shifts)) { // shiftsが配列でない場合のガード
+                console.error('[DEBUG] processShiftsForTimeline - 入力シフトが配列ではありません:', shifts);
+                return processedShifts;
+            }
+
+            shifts.forEach(shift => {
+                console.log('[DEBUG] processShiftsForTimeline - 処理中の個別シフト:', JSON.parse(JSON.stringify(shift)));
+
+                if (shift.type === 'lecture' && shift.lectures && Array.isArray(shift.lectures)) {
+                    shift.lectures.forEach(lectureNum => {
+                        if (lectureDefinitions[lectureNum]) {
+                            const lecture = lectureDefinitions[lectureNum];
+                            processedShifts.push({
+                                ...shift,
+                                startTime: lecture.start,
+                                endTime: lecture.end,
+                                displayName: `${shift.user_name} (${lecture.name})`,
+                                shiftType: 'lecture'
+                            });
+                        } else {
+                            console.warn(`[DEBUG] processShiftsForTimeline - 講義定義が見つかりません: lectureNum=${lectureNum}`);
+                        }
+                    });
+                } else if (shift.type === 'time' && shift.start_time && shift.end_time) {
+                    processedShifts.push({
+                        ...shift,
+                        startTime: shift.start_time.substring(0, 5),
+                        endTime: shift.end_time.substring(0, 5),
+                        displayName: `${shift.user_name} (${shift.start_time.substring(0, 5)}-${shift.end_time.substring(0, 5)})`,
+                        shiftType: 'time'
+                    });
+                } else {
+                     console.warn('[DEBUG] processShiftsForTimeline - 未対応のシフトタイプまたはデータ不足:', JSON.parse(JSON.stringify(shift)));
+                }
+            });
+
+            console.log('[DEBUG] processShiftsForTimeline - 出力（処理済みシフト）:', JSON.parse(JSON.stringify(processedShifts)));
+            return processedShifts;
+        }
+
+        // シフトブロックを生成
+        function generateShiftBlock(shift) {
+            const startMinutes = timeToMinutes(shift.startTime);
+            const endMinutes = timeToMinutes(shift.endTime);
+            const duration = endMinutes - startMinutes;
+
+            // 表示位置を計算（9:00を基準点とする）
+            const baseMinutes = timelineConfig.startHour * 60;
+            const topPosition = (startMinutes - baseMinutes) * timelineConfig.minuteHeight;
+            const height = duration * timelineConfig.minuteHeight;
+
+            // 重複チェック（簡易版）
+            const overlapClass = checkForOverlap(shift) ? ' overlap' : '';
+
+            return `
+                <div class="shift-block ${shift.shiftType}${overlapClass}"
+                     style="top: ${topPosition}px; height: ${height}px;"
+                     title="${shift.displayName}">
+                    <div class="font-semibold">${shift.user_name}</div>
+                    <div class="text-xs">${shift.startTime} - ${shift.endTime}</div>
+                    ${shift.shiftType === 'lecture' ? `<div class="text-xs opacity-75">講義</div>` : ''}
+                </div>
+            `;
+        }
+
+        // 時間文字列を分に変換
+        function timeToMinutes(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // 重複チェック（簡易実装）
+        function checkForOverlap(shift) {
+            // 実際の実装では、同じ日の他のシフトとの重複をチェック
+            // ここでは簡易的にfalseを返す
+            return false;
+        }
+
+        // 日付フィルター機能（タイムライン用）
+        function setupTimelineFilter(allDates, shiftsByDate) {
             const startDateInput = document.getElementById('start_date');
             const endDateInput = document.getElementById('end_date');
             const filterButton = document.getElementById('filter_button');
 
-            // 日付選択の初期値を空に設定
             startDateInput.value = '';
             endDateInput.value = '';
 
-            // フィルターボタンのクリックイベント
             filterButton.addEventListener('click', function() {
                 if (startDateInput.value && !endDateInput.value) {
                     const startDate = new Date(startDateInput.value);
-                    filterByDate(startDate, null, allDates, shiftsByDate);
+                    filterTimelineByDate(startDate, null, allDates, shiftsByDate);
                 } else if (startDateInput.value && endDateInput.value) {
                     const startDate = new Date(startDateInput.value);
                     const endDate = new Date(endDateInput.value);
-                    filterByDate(startDate, endDate, allDates, shiftsByDate);
+                    filterTimelineByDate(startDate, endDate, allDates, shiftsByDate);
                 } else if (!startDateInput.value && !endDateInput.value) {
-                    // 全て表示
-                    generateLectureTable(allDates, shiftsByDate);
-                    generateTimeTable(allDates, shiftsByDate);
-                    setupScrollSync(); // 再設定
+                    renderTimeline(allDates, shiftsByDate);
                 } else {
                     alert('開始日を入力してください');
                 }
             });
         }
 
-        // 日付フィルター実行
-        function filterByDate(startDate, endDate, allDates, shiftsByDate) {
+        // 日付フィルター実行（タイムライン用）
+        function filterTimelineByDate(startDate, endDate, allDates, shiftsByDate) {
             const filteredDates = allDates.filter(date => {
                 const dateObj = new Date(date);
                 if (endDate) {
@@ -387,9 +1052,7 @@
                 }
             });
 
-            generateLectureTable(filteredDates, shiftsByDate);
-            generateTimeTable(filteredDates, shiftsByDate);
-            setupScrollSync(); // 再設定
+            renderTimeline(filteredDates, shiftsByDate);
         }
     </script>
 </body>
