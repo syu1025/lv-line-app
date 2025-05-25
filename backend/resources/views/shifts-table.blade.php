@@ -311,10 +311,10 @@
                         const startTime = userTimeShift.start_time ? userTimeShift.start_time.substring(11, 16) : '';
                         const endTime = userTimeShift.end_time ? userTimeShift.end_time.substring(11, 16) : '';
                         timeText = `${startTime} ~ ${endTime}`;
-                        console.log("userTimeShift:start_time" + userTimeShift.start_time)
-                        console.log("userTimeShift:end_time" + userTimeShift.end_time)
-                        console.log("startTime:" + startTime)
-                        console.log("endTime:" + endTime)
+                        //console.log("userTimeShift:start_time" + userTimeShift.start_time)
+                        //console.log("userTimeShift:end_time" + userTimeShift.end_time)
+                        //console.log("startTime:" + startTime)
+                        //console.log("endTime:" + endTime)
                     }
                     bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${timeText}</td>`;
                 });
@@ -367,9 +367,17 @@
             const endDateInput = document.getElementById('end_date');
             const filterButton = document.getElementById('filter_button');
 
-            // 日付選択の初期値を空に設定
-            startDateInput.value = '';
+            // 今日の日付を取得
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD形式
+
+            // 日付選択の初期値を今日に設定
+            startDateInput.value = todayStr;
             endDateInput.value = '';
+
+            // 初回表示時に今日以降をフィルター
+            const startDate = new Date(todayStr);
+            filterByDate(startDate, null, allDates, shiftsByDate);
 
             // フィルターボタンのクリックイベント
             filterButton.addEventListener('click', function() {

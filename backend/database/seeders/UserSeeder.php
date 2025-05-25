@@ -29,6 +29,18 @@ class UserSeeder extends Seeder
             [
                 'name' => env('USER_3_NAME'),
                 'password' => env('USER_3_PASSWORD')
+            ],
+            [
+                'name' => env('USER_4_NAME'),
+                'password' => env('USER_4_PASSWORD')
+            ],
+            [
+                'name' => env('USER_5_NAME'),
+                'password' => env('USER_5_PASSWORD')
+            ],
+            [
+                'name' => env('USER_6_NAME'),
+                'password' => env('USER_6_PASSWORD')
             ]
             // 必要に応じて追加のユーザーを定義
         ];
@@ -48,17 +60,6 @@ class UserSeeder extends Seeder
                     ]
                 );
             }
-        }
-
-        // 本番環境では初期管理者のみ作成し、パスワードリセットコマンドを実行
-        if (app()->environment('production')) {
-            $admin = User::create([
-                'name' => 'admin',
-                'password' => Hash::make(Str::random(32)), // 一時的なランダムパスワード
-            ]);
-
-            // パスワードリセットリンクを生成（本番環境のみ）
-            $this->command->info('管理者ユーザーが作成されました。パスワードリセットを行ってください。');
         }
     }
 }
