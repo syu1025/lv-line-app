@@ -343,8 +343,12 @@ const LINEMiniApp = () => {
         ) : (
           /* 確認画面 */
           <div className="flex-1 overflow-auto p-4">
-            <h2 className="text-lg font-bold mb-4">シフト確認</h2>
-
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">シフト確認</h2>
+                <p className="text-red-500 text-sm font-bold flex-1 text-center">
+                    一度提出したシフトを修正する場合はラインでお願いします
+                </p>
+            </div>
             <div className="bg-white p-4 rounded-lg shadow mb-4">
               {selectedDates.map(dateStr => (
                 <div key={dateStr} className="border-b py-3 last:border-b-0">
