@@ -61,9 +61,14 @@ class ShiftController extends Controller
 
         // ミドルウェアで設定されたユーザー情報を取得
         $user = $request->attributes->get('user');
-        $shifts = Shift::where('user_name', $user->name)
+        if ($user->name == "admin"){
+            $shifts = Shift::orderBy('date')
+            ->get();
+        }else{
+            $shifts = Shift::where('user_name', $user->name)
             ->orderBy('date')
             ->get();
+        }
 
         return response()->json([
             'shifts' => $shifts,
