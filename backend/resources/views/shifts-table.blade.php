@@ -243,7 +243,11 @@
             // ヘッダー生成
             let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">講義</th>';
             dates.forEach(date => {
-                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
+                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
                 headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
             });
             headerHtml += '</tr></thead>';
@@ -283,7 +287,11 @@
             // ヘッダー生成
             let headerHtml = '<thead><tr><th class="border border-gray-300 col-fixed sticky-col">ユーザー</th>';
             dates.forEach(date => {
-                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {month: 'numeric', day: 'numeric'});
+                const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
                 headerHtml += `<th class="border border-gray-300 col-date" data-date="${date}">${formattedDate}</th>`;
             });
             headerHtml += '</tr></thead>';
