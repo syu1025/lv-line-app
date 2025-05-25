@@ -220,6 +220,8 @@
             });
 
             const dates = Object.keys(shiftsByDate).sort();
+            //console.log("dates:", dates);
+            //console.log("shiftsByDate:", shiftsByDate);
 
             // 講義シフト表を生成
             generateLectureTable(dates, shiftsByDate);
@@ -296,10 +298,15 @@
                         shift.user_name === user && shift.type === 'time'
                     );
                     let timeText = '';
+
                     if (userTimeShift) {
-                        const startTime = userTimeShift.start_time ? userTimeShift.start_time.substring(0, 5) : '';
-                        const endTime = userTimeShift.end_time ? userTimeShift.end_time.substring(0, 5) : '';
+                        const startTime = userTimeShift.start_time ? userTimeShift.start_time.substring(11, 16) : '';
+                        const endTime = userTimeShift.end_time ? userTimeShift.end_time.substring(11, 16) : '';
                         timeText = `${startTime} ~ ${endTime}`;
+                        console.log("userTimeShift:start_time" + userTimeShift.start_time)
+                        console.log("userTimeShift:end_time" + userTimeShift.end_time)
+                        console.log("startTime:" + startTime)
+                        console.log("endTime:" + endTime)
                     }
                     bodyHtml += `<td class="border border-gray-300 col-date" data-date="${date}">${timeText}</td>`;
                 });

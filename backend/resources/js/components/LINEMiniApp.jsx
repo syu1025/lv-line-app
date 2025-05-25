@@ -264,13 +264,13 @@ const LINEMiniApp = () => {
                       <div className="flex items-center">
                         <Clock size={16} className="text-gray-400 mr-2" />
                         <select
-                          className="bg-gray-50 border border-gray-200 rounded px-2 py-1 mr-2"
+                          className="bg-gray-50 border border-gray-200 rounded px-2 py-1"
                           value={shifts[dateStr]?.startTime || ''}
                           onChange={(e) => updateShift(dateStr, {...shifts[dateStr], startTime: e.target.value})}
                         >
                           <option value="">開始時間</option>
-                          {Array.from({length: 28}, (_, i) => {
-                            const hour = Math.floor(i / 2) + 9;
+                          {Array.from({length: 17}, (_, i) => {
+                            const hour = Math.floor(i / 2) + 14;
                             const minute = i % 2 === 0 ? '00' : '30';
                             return `${hour}:${minute}`;
                           }).map(time => (
@@ -284,11 +284,10 @@ const LINEMiniApp = () => {
                           onChange={(e) => updateShift(dateStr, {...shifts[dateStr], endTime: e.target.value})}
                         >
                           <option value="">終了時間</option>
-                          {Array.from({length: 28}, (_, i) => {
-                            const hour = Math.floor(i / 2) + 9;
-                            const minute = i % 2 === 0 ? '30' : '00';
-                            const displayHour = minute === '30' ? hour : hour + 1;
-                            return `${displayHour}:${minute}`;
+                          {Array.from({length: 16}, (_, i) => {
+                            const hour = Math.floor((i + 1) / 2) + 14;
+                            const minute = (i + 1) % 2 === 0 ? '00' : '30';
+                            return `${hour}:${minute}`;
                           }).map(time => (
                             <option key={time} value={time}>{time}</option>
                           ))}
